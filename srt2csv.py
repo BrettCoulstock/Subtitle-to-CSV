@@ -25,11 +25,6 @@ def main():
 
 	file_name = sys.argv[1]
 
-
-
-	#path = "./"
-	#file_name = "subtitles.srt"
-
 	try:
 		file1 = open(file_name, 'r')
 		lines = file1.readlines()
