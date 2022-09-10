@@ -43,7 +43,7 @@ Open in your spreadsheet software. You may need to tell it that it is *tab delim
 
 ## About
 
-This is a reasonably quick and dirty script I wrote to quickly solve a problem. It probably is not terribly robust, but hopefully it is of some use to someone.
+This is a reasonably quick and dirty script I wrote to solve a problem. It is quite a lateral use of subtitling software and SRT files. It probably is not terribly robust, but hopefully it is of some use to someone.
 
 
 
