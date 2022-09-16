@@ -16,6 +16,103 @@ def get_duration(a,b):
 	return(duration)
 
 
+def render_csv(cues):
+
+	sep = "\t"
+
+	# Print header
+	print(sep.join(["Serial","TimecodeIn","TimecodeOut","Duration","TRANSLATION"]))
+
+	count = 1
+	for i in cues:
+		print(sep.join([str(count),i["TimecodeIn"],i["TimecodeOut"],i["Duration"],i["Translation"]]))
+		count += 1
+
+def internalise(lines):
+
+	cues = []
+
+	GET_TEXT = 1
+	WAITING = 2
+	cue = 0	
+	current_state = WAITING
+	start_time = ""
+	end_time = ""
+	text = ""
+	duration = 0
+	text_line = 0
+
+	current_cue = {}
+
+	for line in lines:
+		line = line.strip()
+
+		if "-->" in line:
+			cue += 1
+			start_time = line[0:12]
+			end_time = line[17:]
+			duration = get_duration(start_time,end_time)
+			current_state = GET_TEXT
+			text_line = 0
+
+			current_cue["TimecodeIn"] = start_time
+			current_cue["TimecodeOut"] = end_time
+			current_cue["Duration"] = duration
+
+			continue
+
+		if line == "":
+			current_cue["Translation"] = text
+			cues.append(current_cue)
+			current_cue = {}
+			text = ""
+			current_state = WAITING
+			continue
+
+		if current_state == GET_TEXT:
+			if text_line == 0:
+				text += line
+				text_line += 1
+			else:
+				text += " " + line
+
+	if current_state == GET_TEXT:
+		current_cue["Translation"] = text
+		cues.append(current_cue)
+
+	return cues
+
+def render_html(cues):
+
+	print("""
+<html>
+<table>
+<tr>
+<th>Serial</th>
+<th>TimecodeIn</th>
+<th>TimecodeOut</th>
+<th>Duration</th>
+<th>Translation</th>
+</tr>
+	""")
+
+	count = 1
+	for i in cues:
+
+		print("<tr>")
+		print("<td>" + str(count) + "</td>")
+		print("<td>" + i["TimecodeIn"] + "</td>")
+		print("<td>" + i["TimecodeOut"] + "</td>")
+		print("<td>" + i["Duration"] + "</td>")
+		print("<td>" + i["Translation"] + "</td>")
+		print("</tr>")
+
+		count += 1
+
+	print("</table></html>")
+
+
+
 def main():
 
 	n = len(sys.argv)
@@ -33,46 +130,13 @@ def main():
 		print("Unable to open file")
 		exit()
 
-	GET_TEXT = 1
-	WAITING = 2
-	sep = "\t"
-	cue = 0	
-	current_state = WAITING
-	start_time = ""
-	end_time = ""
-	text = ""
-	duration = 0
-	text_line = 0
+	# Turn SRT file into internal state
+	# An array of hashes (ie. structs)
+	# Fields: TimecodeIn, TimecodeOut, Duration, Translation (ie, the voiceover)
 
-	print(sep.join(["Serial","TimecodeIn","TimecodeOut","Duration","TRANSLATION"]))
+	cues = internalise(lines)
 
-	for line in lines:
-		line = line.strip()
-
-		if "-->" in line:
-			cue += 1
-			start_time = line[0:12]
-			end_time = line[17:]
-			duration = get_duration(start_time,end_time)
-			current_state = GET_TEXT
-			text_line = 0
-			continue
-
-		if line == "":
-			print(str(cue) + sep + start_time + sep + end_time + sep + duration + sep +  text)
-			text = ""
-			current_state = WAITING
-			continue
-
-		if current_state == GET_TEXT:
-			if text_line == 0:
-				text += line
-				text_line += 1
-			else:
-				text += " " + line
-
-	if current_state == GET_TEXT:
-		print(str(cue) + sep + start_time + sep + end_time + sep + duration + sep +  text)
+	render_csv(cues)
 
 if __name__ == '__main__':
 	main()
