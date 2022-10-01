@@ -28,7 +28,7 @@ He gives her a warm, compassionate smile as she sits back down at the table
 Use the python3 script on the command-line to convert the file to a tabular format, like this:
 
 ```
-$python3 subtitles.srt > subtitles.csv
+$python3 str2csv.py subtitles.srt > subtitles.csv
 ```
 
 This will create a CSV file "subtitles.csv" formatted like this:
