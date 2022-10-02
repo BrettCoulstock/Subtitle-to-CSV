@@ -29,10 +29,13 @@ Use the python3 script on the command-line to convert the file to a tabular form
 
 ```
 $python3 str2csv.py subtitles.srt csv > subtitles.csv
+```
 
 or
 
+```
 $python3 str2csv.py subtitles.srt html > subtitles.html
+```
 
 This will create a CSV or HTML file formatted like this:
 
