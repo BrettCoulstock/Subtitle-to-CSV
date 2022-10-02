@@ -1,6 +1,7 @@
 import sys
 import datetime
 from datetime import *
+import argparse
 
 def get_duration(a,b):
 
@@ -10,25 +11,17 @@ def get_duration(a,b):
 	duration = end - start
 
 	duration = str(duration)[2:]
+
+	# Truncate if too long
 	if len(duration) > 8:
 		duration = duration[0:8]
 
 	return(duration)
 
 
-def render_csv(cues):
-
-	sep = "\t"
-
-	# Print header
-	print(sep.join(["Serial","TimecodeIn","TimecodeOut","Duration","TRANSLATION"]))
-
-	count = 1
-	for i in cues:
-		print(sep.join([str(count),i["TimecodeIn"],i["TimecodeOut"],i["Duration"],i["Translation"]]))
-		count += 1
-
 def internalise(lines):
+
+	""" Convert an SRT file into an internal data structure """
 
 	cues = []
 
@@ -82,7 +75,25 @@ def internalise(lines):
 
 	return cues
 
+
+def render_csv(cues):
+
+	""" Render the internal data structure into tab delimited CSV data """
+
+	sep = "\t"
+
+	# Print header
+	print(sep.join(["Serial","TimecodeIn","TimecodeOut","Duration","TRANSLATION"]))
+
+	count = 1
+	for i in cues:
+		print(sep.join([str(count),i["TimecodeIn"],i["TimecodeOut"],i["Duration"],i["Translation"]]))
+		count += 1
+
+
 def render_html(cues):
+
+	""" Render the internal data structure into a html file as a table """
 
 	print("""
 <html>
@@ -115,15 +126,20 @@ def render_html(cues):
 
 def main():
 
-	n = len(sys.argv)
-	if n < 2:
-		print("Not enough arguments")
-		exit()
+	# Process command line options
 
-	file_name = sys.argv[1]
+	# ... create
+	parser = argparse.ArgumentParser(description="Convert a subtitle file (SRT) to either a basic tab delimited file (CSV) or a table in a HTML file.")
+
+	# ... add arguments
+	parser.add_argument("file_name", help="The name of the SRT subtitle file to convert")
+	parser.add_argument("output_format", help="Output format. Valid values are 'html' and 'csv'.", choices=['html','csv'], default="csv")
+
+	# ... parse
+	args = parser.parse_args()
 
 	try:
-		file1 = open(file_name, 'r')
+		file1 = open(args.file_name, 'r')
 		lines = file1.readlines()
 		file1.close()
 	except:
@@ -133,10 +149,14 @@ def main():
 	# Turn SRT file into internal state
 	# An array of hashes (ie. structs)
 	# Fields: TimecodeIn, TimecodeOut, Duration, Translation (ie, the voiceover)
+	# Fieldnames based on Netflix Audio Description template + duration
 
 	cues = internalise(lines)
 
-	render_csv(cues)
+	if args.output_format == 'html':
+		render_html(cues)
+	else:
+		render_csv(cues)
 
 if __name__ == '__main__':
 	main()
